@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Download, Sparkles, FileText, Rocket, Type } from 'lucide-react';
 import { FileUploader } from './components/features/upload/FileUploader';
 import { ConfigurationPanel } from './components/features/config/ConfigurationPanel';
@@ -170,7 +171,7 @@ function App() {
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold bg-linear-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-linear-to-r from-blue-400 via-indigo-300 to-blue-400 bg-clip-text text-transparent animate-shimmer">
               Flashy
             </span>
             <span className="text-sm text-gray-400 font-medium px-2 py-0.5 bg-gray-800 rounded-full">Beta</span>
@@ -197,30 +198,93 @@ function App() {
         </div>
       </header>
 
+      {/* Privacy & Open Source Notice */}
+      <div className="bg-gray-900/60 border-b border-gray-800/50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-center gap-1.5 text-sm text-gray-400 flex-wrap">
+          <span><span className="text-emerald-400 font-semibold">Zero data collection.</span> Your files, API key, and decks never leave your browser.</span>
+          <span className="text-gray-600 hidden sm:inline">·</span>
+          <span>Fully open source on{' '}
+            <a href="https://github.com/Shrujal00/flashyD" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">GitHub</a>.
+          </span>
+        </div>
+      </div>
+
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {!file && !extractedText ? (
-          <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="text-center space-y-4 pt-8">
-              <p className="text-sm font-medium tracking-widest uppercase text-blue-400/70">Tired of typing flashcards by hand?</p>
-              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-gray-100">
+          <div className="space-y-12 relative">
+            {/* Floating glow orbs */}
+            <motion.div
+              className="absolute -top-20 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"
+              animate={{ x: [0, 30, -20, 0], y: [0, -20, 15, 0], scale: [1, 1.1, 0.95, 1] }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            <motion.div
+              className="absolute top-40 right-1/4 w-60 h-60 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"
+              animate={{ x: [0, -25, 20, 0], y: [0, 25, -15, 0], scale: [1, 0.9, 1.1, 1] }}
+              transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+            />
+
+            <div className="text-center space-y-4 pt-8 relative">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-sm font-medium tracking-widest uppercase text-blue-400/70"
+              >
+                Tired of typing flashcards by hand?
+              </motion.p>
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.15 }}
+                className="text-4xl sm:text-6xl font-extrabold tracking-tight text-gray-100"
+              >
                 Drop a File. <br />
-                <span className="text-blue-400">Get a Deck.</span>
-              </h1>
-              <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                <motion.span
+                  className="text-blue-400 inline-block"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4, type: 'spring', stiffness: 200 }}
+                >
+                  Get a Deck.
+                </motion.span>
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="text-xl text-gray-400 max-w-2xl mx-auto"
+              >
                 Upload any document and let AI turn it into study-ready Anki flashcards in seconds.
-              </p>
+              </motion.p>
             </div>
-            <FileUploader onFileSelect={handleFileSelect} isLoading={isExtracting} />
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.45 }}
+            >
+              <FileUploader onFileSelect={handleFileSelect} isLoading={isExtracting} />
+            </motion.div>
 
             {/* Divider */}
-            <div className="flex items-center gap-4 max-w-2xl mx-auto w-full">
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.5, delay: 0.55 }}
+              className="flex items-center gap-4 max-w-2xl mx-auto w-full"
+            >
               <div className="flex-1 h-px bg-gray-800" />
               <span className="text-sm text-gray-500 font-medium">or paste your text</span>
               <div className="flex-1 h-px bg-gray-800" />
-            </div>
+            </motion.div>
 
             {/* Text Input */}
-            <div className="max-w-2xl mx-auto w-full">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+              className="max-w-2xl mx-auto w-full"
+            >
               <textarea
                 value={pastedText}
                 onChange={(e) => setPastedText(e.target.value)}
@@ -245,14 +309,27 @@ function App() {
                   Use This Text
                 </button>
               </div>
-            </div>
+            </motion.div>
 
-            <ApiKeyGuide />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <ApiKeyGuide />
+            </motion.div>
 
             {/* Upcoming Features */}
-            <div className="w-full max-w-3xl mx-auto pt-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="w-full max-w-3xl mx-auto pt-4"
+            >
               <div className="flex items-center justify-center gap-2 mb-8">
-                <Rocket size={20} className="text-indigo-400" />
+                <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
+                  <Rocket size={20} className="text-indigo-400" />
+                </motion.div>
                 <h2 className="text-lg font-bold text-gray-100">Coming Soon</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -263,23 +340,43 @@ function App() {
                   { icon: '📸', label: 'Image → Flashcards', desc: 'Snap a photo of handwritten notes and create cards', color: 'amber' },
                   { icon: '🧠', label: 'Quiz Mode', desc: 'Test yourself on generated cards before exporting', color: 'emerald' },
                   { icon: '🌍', label: 'Multi-language', desc: 'Generate cards in any language or auto-translate them', color: 'cyan' },
-                ].map((feature) => (
-                  <div
+                ].map((feature, idx) => (
+                  <motion.div
                     key={feature.label}
-                    className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.9 + idx * 0.1 }}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group cursor-default"
                   >
-                    <span className="text-2xl block mb-3">{feature.icon}</span>
+                    <motion.span
+                      className="text-2xl block mb-3"
+                      whileHover={{ scale: 1.3, rotate: [0, -10, 10, 0] }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {feature.icon}
+                    </motion.span>
                     <h3 className="text-sm font-semibold text-gray-200 mb-1">{feature.label}</h3>
                     <p className="text-xs text-gray-500 leading-relaxed">{feature.desc}</p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           </div>
         ) : (
-          <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-6"
+          >
             {/* Header / Info */}
-            <div className="flex items-center justify-between bg-gray-900 p-4 rounded-xl border border-gray-800">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="flex items-center justify-between bg-gray-900 p-4 rounded-xl border border-gray-800"
+            >
               <div className="flex items-center gap-3">
                 <div className={clsx("p-2 rounded-lg", file ? "bg-blue-500/10 text-blue-400" : "bg-indigo-500/10 text-indigo-400")}>
                   {file ? <FileText size={24} /> : <Type size={24} />}
@@ -295,13 +392,24 @@ function App() {
               >
                 Start Over
               </button>
-            </div>
+            </motion.div>
 
             {/* Configuration */}
-            <ConfigurationPanel config={config} onChange={handleConfigChange} />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <ConfigurationPanel config={config} onChange={handleConfigChange} />
+            </motion.div>
 
             {/* Action Area */}
-            <div className="flex justify-end items-center gap-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.3 }}
+              className="flex justify-end items-center gap-4"
+            >
               {generationError && (
                 <p className="text-red-400 text-sm font-medium">{generationError}</p>
               )}
@@ -314,7 +422,7 @@ function App() {
                     "flex items-center gap-2 px-8 py-3 bg-blue-600 text-white font-medium rounded-xl shadow-md transition-all",
                     (isGenerating || !apiKey || !extractedText)
                       ? "opacity-50 cursor-not-allowed"
-                      : "hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transform active:scale-95"
+                      : "hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transform active:scale-95 animate-pulse-glow"
                   )}
                 >
                   {isGenerating ? (
@@ -330,19 +438,27 @@ function App() {
                   )}
                 </button>
               ) : null}
-            </div>
+            </motion.div>
 
             {/* Results */}
+            <AnimatePresence>
             {cards.length > 0 && (
-              <div className="space-y-6 pt-6 border-t border-gray-800 animate-in slide-in-from-bottom-8">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-6 pt-6 border-t border-gray-800"
+              >
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-bold text-gray-100">
                     Generated Deck <span className="text-gray-500 font-normal text-lg">({cards.length} cards)</span>
                   </h3>
-                  <button
+                  <motion.button
                     onClick={handleDownload}
                     disabled={isDownloading}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl shadow-md hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all transform active:scale-95"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl shadow-md hover:bg-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-colors"
                   >
                     {isDownloading ? (
                       'Preparing Download...'
@@ -352,12 +468,19 @@ function App() {
                         Download .apkg
                       </>
                     )}
-                  </button>
+                  </motion.button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {cards.map((card, idx) => (
-                    <div key={idx} className="group relative bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200">
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 40, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.4, delay: idx * 0.06, type: 'spring', stiffness: 150, damping: 15 }}
+                      whileHover={{ y: -6, scale: 1.02 }}
+                      className="group relative bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-colors duration-200"
+                    >
                       <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                         {/* Edit/Delete actions could go here */}
                       </div>
@@ -379,12 +502,13 @@ function App() {
                           <p className="text-gray-300 leading-relaxed max-h-32 overflow-y-auto">{card.back}</p>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+            </AnimatePresence>
+          </motion.div>
         )}
 
         {/* Previous Decks */}
@@ -395,7 +519,12 @@ function App() {
         />
       </main>
 
-      <footer className="border-t border-gray-800 py-6 mt-10">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 1 }}
+        className="border-t border-gray-800 py-6 mt-10"
+      >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-500">
           <span>
             Made by{' '}
@@ -408,7 +537,7 @@ function App() {
             View on GitHub
           </a>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
