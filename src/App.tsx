@@ -10,6 +10,7 @@ import { generateAnkiPackage, downloadDeck } from './lib/anki';
 import { getDecks, saveDeck, deleteDeck } from './lib/storage';
 import type { DeckRecord } from './lib/storage';
 import { DeckHistory } from './components/features/history/DeckHistory';
+import { ApiKeyGuide } from './components/features/guide/ApiKeyGuide';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -179,8 +180,7 @@ function App() {
               className="border border-gray-700 rounded-md px-3 py-1.5 text-sm w-56 bg-gray-800 text-gray-200 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 outline-none"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-            />
-          </div>
+            />            <ApiKeyGuide compact />          </div>
         </div>
       </header>
 
@@ -198,6 +198,7 @@ function App() {
               </p>
             </div>
             <FileUploader onFileSelect={handleFileSelect} isLoading={isExtracting} />
+            <ApiKeyGuide />
           </div>
         ) : (
           <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
