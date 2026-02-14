@@ -4,9 +4,12 @@ import { Download, Sparkles, FileText } from 'lucide-react';
 import { FileUploader } from './components/features/upload/FileUploader';
 import { ConfigurationPanel } from './components/features/config/ConfigurationPanel';
 import { extractText } from './lib/extractors';
-import { generateFlashcards, AVAILABLE_MODELS } from './lib/ai';
-import type { Flashcard } from './lib/ai';
+import { generateFlashcards, fetchAvailableModels, FALLBACK_MODELS } from './lib/ai';
+import type { Flashcard, ModelOption } from './lib/ai';
 import { generateAnkiPackage, downloadDeck } from './lib/anki';
+import { getDecks, saveDeck, deleteDeck } from './lib/storage';
+import type { DeckRecord } from './lib/storage';
+import { DeckHistory } from './components/features/history/DeckHistory';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -24,11 +27,28 @@ function App() {
 
   // Generation State
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState(AVAILABLE_MODELS[0].id);
+  const [models, setModels] = useState<ModelOption[]>(FALLBACK_MODELS);
+  const [model, setModel] = useState(FALLBACK_MODELS[0].id);
   const [isGenerating, setIsGenerating] = useState(false);
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // Fetch live model list from OpenRouter on mount
+  useEffect(() => {
+    fetchAvailableModels().then((fetched) => {
+      setModels(fetched);
+      if (fetched.length > 0 && !fetched.some(m => m.id === model)) {
+        setModel(fetched[0].id);
+      }
+    });
+  }, []);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // Saved decks from localStorage
+  const [savedDecks, setSavedDecks] = useState<DeckRecord[]>([]);
+  useEffect(() => {
+    setSavedDecks(getDecks());
+  }, []);
 
   // Auto-set deck name from filename
   useEffect(() => {
@@ -82,6 +102,17 @@ function App() {
         focusAreas: config.focusAreas
       });
       setCards(generatedCards);
+
+      // Save to local history
+      saveDeck({
+        deckName: config.deckName || 'Untitled Deck',
+        cards: generatedCards,
+        model,
+        difficulty: config.difficulty,
+        sourceFile: file?.name ?? 'unknown',
+        tags: config.tags.split(',').map(t => t.trim()).filter(Boolean),
+      });
+      setSavedDecks(getDecks());
     } catch (error: any) {
       setGenerationError(error.message);
     } finally {
@@ -103,6 +134,23 @@ function App() {
     }
   };
 
+  const handleDeleteDeck = (id: string) => {
+    deleteDeck(id);
+    setSavedDecks(getDecks());
+  };
+
+  const handleLoadDeck = (deck: DeckRecord) => {
+    setCards(deck.cards);
+    setConfig(prev => ({
+      ...prev,
+      deckName: deck.deckName,
+      difficulty: deck.difficulty,
+      tags: deck.tags.join(', '),
+    }));
+    // Scroll to top to see the loaded cards
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 font-sans pb-20">
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-10">
@@ -119,7 +167,7 @@ function App() {
               onChange={(e) => setModel(e.target.value)}
               className="border border-gray-700 rounded-md px-2 py-1.5 text-sm bg-gray-800 text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
             >
-              {AVAILABLE_MODELS.map((m) => (
+              {models.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name} ({m.provider}){m.free ? ' ✦ Free' : ''}
                 </option>
@@ -261,6 +309,13 @@ function App() {
             )}
           </div>
         )}
+
+        {/* Previous Decks */}
+        <DeckHistory
+          decks={savedDecks}
+          onDelete={handleDeleteDeck}
+          onLoad={handleLoadDeck}
+        />
       </main>
     </div>
   );

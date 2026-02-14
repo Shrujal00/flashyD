@@ -12,9 +12,8 @@ export interface ModelOption {
     free?: boolean;
 }
 
-export const AVAILABLE_MODELS: ModelOption[] = [
-    { id: 'stepfun/step-3.5-flash', name: 'Step 3.5 Flash', provider: 'StepFun', free: true },
-    { id: 'arcee-ai/trinity-large-preview', name: 'Trinity Large Preview', provider: 'Arcee AI', free: true },
+// Fallback used while the live list loads or if the fetch fails
+export const FALLBACK_MODELS: ModelOption[] = [
     { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', provider: 'Google', free: true },
     { id: 'deepseek/deepseek-chat-v3-0324', name: 'DeepSeek V3', provider: 'DeepSeek' },
     { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
@@ -22,6 +21,70 @@ export const AVAILABLE_MODELS: ModelOption[] = [
     { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
     { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'Meta' },
 ];
+
+/** Preferred models that get sorted to the top when found in the live list */
+const PREFERRED_IDS = new Set([
+    'google/gemini-2.0-flash-001',
+    'deepseek/deepseek-chat-v3-0324',
+    'openai/gpt-4o-mini',
+    'openai/gpt-4o',
+    'anthropic/claude-3.5-sonnet',
+    'meta-llama/llama-3.3-70b-instruct',
+]);
+
+/**
+ * Fetch available models from the OpenRouter API.
+ * A model is marked free when both prompt and completion pricing are "0".
+ * Only text-output models are included, capped at 50 results.
+ */
+export async function fetchAvailableModels(): Promise<ModelOption[]> {
+    try {
+        console.log('[Flashy] Fetching models from OpenRouter...');
+        const res = await fetch('https://openrouter.ai/api/v1/models');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const json = await res.json();
+        const models: ModelOption[] = [];
+
+        for (const m of json.data ?? []) {
+            // Only include models that produce text output
+            const outputMods: string[] = m.architecture?.output_modalities ?? [];
+            if (!outputMods.includes('text')) continue;
+
+            const isFree =
+                m.pricing?.prompt === '0' && m.pricing?.completion === '0';
+
+            // Extract provider from the id (e.g. "openai/gpt-4o" → "OpenAI")
+            const rawProvider = (m.id as string).split('/')[0] ?? '';
+            const provider =
+                rawProvider.charAt(0).toUpperCase() + rawProvider.slice(1);
+
+            models.push({
+                id: m.id,
+                name: m.name ?? m.id,
+                provider,
+                free: isFree || undefined,
+            });
+        }
+
+        // Sort: preferred first, then free, then alphabetical
+        models.sort((a, b) => {
+            const aPreferred = PREFERRED_IDS.has(a.id) ? 0 : 1;
+            const bPreferred = PREFERRED_IDS.has(b.id) ? 0 : 1;
+            if (aPreferred !== bPreferred) return aPreferred - bPreferred;
+            const aFree = a.free ? 0 : 1;
+            const bFree = b.free ? 0 : 1;
+            if (aFree !== bFree) return aFree - bFree;
+            return a.name.localeCompare(b.name);
+        });
+
+        console.log(`[Flashy] Fetched ${models.length} models (${models.filter(m => m.free).length} free)`);
+        return models;
+    } catch (err) {
+        console.warn('[Flashy] Failed to fetch models, using fallback list:', err);
+        return FALLBACK_MODELS;
+    }
+}
 
 export interface GenerationConfig {
     apiKey: string;
