@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { Download, Sparkles, FileText } from 'lucide-react';
+import { Download, Sparkles, FileText, Rocket } from 'lucide-react';
 import { FileUploader } from './components/features/upload/FileUploader';
 import { ConfigurationPanel } from './components/features/config/ConfigurationPanel';
 import { extractText } from './lib/extractors';
@@ -199,6 +199,33 @@ function App() {
             </div>
             <FileUploader onFileSelect={handleFileSelect} isLoading={isExtracting} />
             <ApiKeyGuide />
+
+            {/* Upcoming Features */}
+            <div className="w-full max-w-3xl mx-auto pt-4">
+              <div className="flex items-center justify-center gap-2 mb-8">
+                <Rocket size={20} className="text-indigo-400" />
+                <h2 className="text-lg font-bold text-gray-100">Coming Soon</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { icon: '▶', label: 'YouTube → Flashcards', desc: 'Paste a video link and generate cards from the transcript', color: 'red' },
+                  { icon: '🌐', label: 'URL → Flashcards', desc: 'Turn any webpage or article into study material', color: 'blue' },
+                  { icon: '🎙', label: 'Audio → Flashcards', desc: 'Upload lectures or podcasts and extract key concepts', color: 'purple' },
+                  { icon: '📸', label: 'Image → Flashcards', desc: 'Snap a photo of handwritten notes and create cards', color: 'amber' },
+                  { icon: '🧠', label: 'Quiz Mode', desc: 'Test yourself on generated cards before exporting', color: 'emerald' },
+                  { icon: '🌍', label: 'Multi-language', desc: 'Generate cards in any language or auto-translate them', color: 'cyan' },
+                ].map((feature) => (
+                  <div
+                    key={feature.label}
+                    className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors group"
+                  >
+                    <span className="text-2xl block mb-3">{feature.icon}</span>
+                    <h3 className="text-sm font-semibold text-gray-200 mb-1">{feature.label}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
