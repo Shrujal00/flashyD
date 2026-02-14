@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { clsx } from 'clsx';
-import { Download, Sparkles, FileText, Rocket } from 'lucide-react';
+import { Download, Sparkles, FileText, Rocket, Type } from 'lucide-react';
 import { FileUploader } from './components/features/upload/FileUploader';
 import { ConfigurationPanel } from './components/features/config/ConfigurationPanel';
 import { extractText } from './lib/extractors';
@@ -59,8 +59,21 @@ function App() {
     }
   }, [file]);
 
+  const [pastedText, setPastedText] = useState('');
+
   const handleConfigChange = (key: string, value: any) => {
     setConfig(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleTextSubmit = () => {
+    const trimmed = pastedText.trim();
+    if (!trimmed) return;
+    setExtractedText(trimmed);
+    setCards([]);
+    setGenerationError(null);
+    if (!config.deckName) {
+      setConfig(prev => ({ ...prev, deckName: 'My Deck' }));
+    }
   };
 
   const handleFileSelect = async (selectedFile: File) => {
@@ -110,7 +123,7 @@ function App() {
         cards: generatedCards,
         model,
         difficulty: config.difficulty,
-        sourceFile: file?.name ?? 'unknown',
+        sourceFile: file?.name ?? 'Pasted text',
         tags: config.tags.split(',').map(t => t.trim()).filter(Boolean),
       });
       setSavedDecks(getDecks());
@@ -185,7 +198,7 @@ function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {!file ? (
+        {!file && !extractedText ? (
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center space-y-4 pt-8">
               <p className="text-sm font-medium tracking-widest uppercase text-blue-400/70">Tired of typing flashcards by hand?</p>
@@ -198,6 +211,42 @@ function App() {
               </p>
             </div>
             <FileUploader onFileSelect={handleFileSelect} isLoading={isExtracting} />
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 max-w-2xl mx-auto w-full">
+              <div className="flex-1 h-px bg-gray-800" />
+              <span className="text-sm text-gray-500 font-medium">or paste your text</span>
+              <div className="flex-1 h-px bg-gray-800" />
+            </div>
+
+            {/* Text Input */}
+            <div className="max-w-2xl mx-auto w-full">
+              <textarea
+                value={pastedText}
+                onChange={(e) => setPastedText(e.target.value)}
+                placeholder="Paste your notes, lecture content, or any text here..."
+                className="w-full h-40 bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm text-gray-200 placeholder-gray-600 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none transition-colors"
+              />
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-xs text-gray-600">
+                  {pastedText.length > 0 ? `${pastedText.length.toLocaleString()} characters` : ''}
+                </span>
+                <button
+                  onClick={handleTextSubmit}
+                  disabled={!pastedText.trim()}
+                  className={clsx(
+                    "flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-lg transition-all",
+                    pastedText.trim()
+                      ? "bg-blue-600 text-white hover:bg-blue-500 active:scale-95"
+                      : "bg-gray-800 text-gray-600 cursor-not-allowed"
+                  )}
+                >
+                  <Type size={16} />
+                  Use This Text
+                </button>
+              </div>
+            </div>
+
             <ApiKeyGuide />
 
             {/* Upcoming Features */}
@@ -232,16 +281,16 @@ function App() {
             {/* Header / Info */}
             <div className="flex items-center justify-between bg-gray-900 p-4 rounded-xl border border-gray-800">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
-                  <FileText size={24} />
+                <div className={clsx("p-2 rounded-lg", file ? "bg-blue-500/10 text-blue-400" : "bg-indigo-500/10 text-indigo-400")}>
+                  {file ? <FileText size={24} /> : <Type size={24} />}
                 </div>
                 <div>
-                  <h2 className="font-semibold text-gray-100">{file.name}</h2>
-                  <p className="text-sm text-gray-500">{extractedText.length.toLocaleString()} characters extracted</p>
+                  <h2 className="font-semibold text-gray-100">{file ? file.name : 'Pasted Text'}</h2>
+                  <p className="text-sm text-gray-500">{extractedText.length.toLocaleString()} characters</p>
                 </div>
               </div>
               <button
-                onClick={() => { setFile(null); setExtractedText(''); setCards([]); }}
+                onClick={() => { setFile(null); setExtractedText(''); setCards([]); setPastedText(''); }}
                 className="text-sm text-red-400 hover:text-red-300 font-medium px-3 py-1.5 hover:bg-red-500/10 rounded-lg transition-colors"
               >
                 Start Over
