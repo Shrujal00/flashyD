@@ -100,7 +100,3 @@ You'll need an [OpenRouter API key](https://openrouter.ai/) — paste it in the 
 
 MIT
 
----
-
-Contributed by [Aditya Nair](https://github.com/adityanair2509).
-
